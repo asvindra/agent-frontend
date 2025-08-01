@@ -1,192 +1,162 @@
-# Agent Frontend Dashboard
+# AI Agent Chat Frontend
 
-A modern React application for monitoring and controlling AI agents with real-time updates via WebSocket connections.
+A modern React application for chatting with AI agents and uploading files (PDF and images).
 
-## Features
+## 🚀 Features
 
-- 🚀 **Real-time Updates**: Live agent status updates via WebSocket
-- 📊 **Dashboard Overview**: Statistics and visual status indicators
-- 🎛️ **Agent Control**: Start, stop, and restart agent actions
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- 🔄 **Auto-refresh**: Automatic data polling with React Query
-- 🎨 **Modern UI**: Beautiful, accessible interface with smooth animations
-- ⚡ **TypeScript**: Full type safety throughout the application
+- **File Upload Support**: Drag & drop or browse to upload PDF and image files
+- **Chat Interface**: Clean, modern chat UI similar to ChatGPT
+- **Real-time Updates**: WebSocket connection for live updates
+- **Responsive Design**: Works on desktop and mobile devices
+- **TypeScript**: Full type safety throughout the application
 
-## Tech Stack
-
-- **Frontend**: React 19 + TypeScript
-- **State Management**: TanStack Query (React Query)
-- **HTTP Client**: Axios
-- **Real-time**: WebSocket API
-- **Styling**: CSS3 with modern design patterns
-- **Backend**: Separate backend service (configured via environment variables)
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-- **Backend service running** (see configuration below)
-
-### Installation
-
-1. **Clone and install dependencies:**
-   ```bash
-   cd agent-frontend
-   npm install
-   ```
-
-2. **Configure environment variables:**
-   ```bash
-   # The .env file is already created with default values
-   # Update these to match your backend configuration:
-   REACT_APP_API_BASE_URL=http://localhost:8000/api
-   REACT_APP_WEBSOCKET_URL=ws://localhost:8000/ws
-   REACT_APP_AGENT_UPDATE_INTERVAL=5000
-   REACT_APP_ENV=development
-   REACT_APP_DEBUG=true
-   ```
-
-3. **Start your backend service** (make sure it's running on the configured ports)
-
-4. **Start the React application:**
-   ```bash
-   npm start
-   # or use the convenience script:
-   ./start-dev.sh
-   ```
-
-5. **Open your browser:**
-   Navigate to `http://localhost:3000`
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 agent-frontend/
 ├── src/
-│   ├── components/          # React components
-│   │   ├── AgentCard.tsx   # Individual agent display
-│   │   ├── AgentDashboard.tsx # Main dashboard
-│   │   └── StatusIndicator.tsx # WebSocket status
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useAgents.ts    # Agent data fetching
-│   │   └── useWebSocket.ts # WebSocket connection
-│   ├── services/           # API services
-│   │   └── api.ts         # HTTP and WebSocket client
-│   ├── types/             # TypeScript definitions
-│   │   └── api.ts         # API response types
-│   └── App.tsx            # Main application
-├── .env                   # Environment variables
-├── start-dev.sh          # Development startup script
-└── README.md             # Documentation
+│   ├── components/
+│   │   ├── AgentDashboard.tsx    # Main dashboard component
+│   │   ├── RequirementForm.tsx   # Chat and file upload form
+│   │   ├── StatusIndicator.tsx   # WebSocket connection status
+│   │   └── *.css                 # Component styles
+│   ├── hooks/
+│   │   └── useWebSocket.ts       # WebSocket connection hook
+│   ├── services/
+│   │   └── api.ts               # API service with mock data
+│   ├── types/
+│   │   └── api.ts               # TypeScript type definitions
+│   └── App.tsx                  # Root application component
+├── public/                      # Static assets
+├── package.json                 # Dependencies and scripts
+└── README.md                   # This file
 ```
 
-## Environment Variables
+## 🛠️ Installation
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `REACT_APP_API_BASE_URL` | `http://localhost:8000/api` | Backend API endpoint |
-| `REACT_APP_WEBSOCKET_URL` | `ws://localhost:8000/ws` | WebSocket connection URL |
-| `REACT_APP_AGENT_UPDATE_INTERVAL` | `5000` | Polling interval (ms) |
-| `REACT_APP_ENV` | `development` | Environment mode |
-| `REACT_APP_DEBUG` | `true` | Enable debug logging |
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd agent-frontend
+   ```
 
-## Backend API Requirements
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-Your backend should provide these endpoints:
+3. **Start the development server**
+   ```bash
+   npm start
+   ```
 
-### HTTP API Endpoints
-- `GET /api/agents` - Get all agents
-- `GET /api/agents/:id` - Get specific agent
-- `POST /api/agents/:id/actions` - Trigger agent action
+4. **Open your browser**
+   Navigate to `http://localhost:3000`
 
+## 📦 Available Scripts
 
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run tests
+- `npm run eject` - Eject from Create React App
 
-## Features in Detail
+## 🔧 Configuration
 
-### Responsive Design
-- Mobile-friendly interface
-- Adaptive grid layout
-- Touch-friendly controls
+### Environment Variables
 
-## Development
+Create a `.env` file in the root directory:
 
-### Available Scripts
-
-```bash
-# Start development server
-npm start
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-
-# Eject from Create React App
-npm run eject
+```env
+REACT_APP_API_BASE_URL=http://localhost:8000/api
+REACT_APP_WEBSOCKET_URL=ws://localhost:8000/ws
 ```
 
-### Development Script
+## 🎯 Usage
 
-```bash
-# Start with convenience script (recommended)
-./start-dev.sh
+### Chat Interface
+- Type your message in the text area
+- Press Enter to send, Shift+Enter for new line
+- Upload files by dragging them or clicking "browse"
+
+### File Upload
+- **Supported Formats**: PDF and image files (JPG, PNG, GIF, etc.)
+- **File Size Limit**: 10MB per file
+- **Multiple Files**: Upload multiple files at once
+- **Preview**: See file thumbnails and information before sending
+
+### WebSocket Status
+- Green indicator: Connected to WebSocket server
+- Red indicator: Disconnected (will auto-reconnect)
+
+## 🔄 API Integration
+
+The application currently uses mock data. To integrate with a real backend:
+
+1. **Update API endpoints** in `src/services/api.ts`
+2. **Replace mock data** with actual API calls
+3. **Configure WebSocket** for real-time updates
+4. **Update environment variables** with your API URLs
+
+### Example API Payload
+
+When a user submits a message with files, the payload looks like:
+
+```javascript
+{
+  message: "Hello, please analyze this document",
+  files: [
+    {
+      name: "document.pdf",
+      size: 1024000,
+      type: "application/pdf"
+    }
+  ]
+}
 ```
 
-## Customization
-
-### Adding New Agent Actions
-
-1. Update the API service in `src/services/api.ts`
-2. Add new action types in `src/types/api.ts`
-3. Update the AgentCard component to handle new actions
-
-### Styling
+## 🎨 Styling
 
 The application uses modern CSS with:
-- CSS Grid and Flexbox for layouts
-- CSS Custom Properties for theming
-- Smooth transitions and animations
-- Mobile-first responsive design
+- Flexbox and Grid layouts
+- CSS custom properties for theming
+- Smooth animations and transitions
+- Responsive design patterns
+- Dark/light mode support ready
 
-### Adding New Agent Types
+## 🚀 Deployment
 
-1. Extend the `AgentState` interface in `src/types/api.ts`
-2. Update your backend data structure
-3. Modify the AgentCard component to display new fields
+### Build for Production
+```bash
+npm run build
+```
 
-## Troubleshooting
+### Deploy to Static Hosting
+The `build/` folder contains the production-ready files that can be deployed to:
+- Netlify
+- Vercel
+- GitHub Pages
+- AWS S3
+- Any static hosting service
 
-### Common Issues
+## 🔧 Development
 
-1. **WebSocket Connection Failed**
-   - Ensure your backend is running on the configured port
-   - Check firewall settings
-   - Verify the WebSocket URL in .env
+### Adding New Features
+1. Create components in `src/components/`
+2. Add types in `src/types/`
+3. Update API service in `src/services/api.ts`
+4. Add styles in corresponding `.css` files
 
-2. **API Requests Failing**
-   - Confirm your backend API is running
-   - Check the API base URL in .env
-   - Verify CORS settings on your backend
+### Code Style
+- TypeScript for type safety
+- Functional components with hooks
+- CSS modules for styling
+- ESLint for code quality
 
-3. **Build Errors**
-   - Clear node_modules and reinstall: `rm -rf node_modules && npm install`
-   - Check TypeScript errors: `npx tsc --noEmit`
+## 📝 License
 
-4. **Port Already in Use**
-   - Kill existing processes: `lsof -ti:3000 | xargs kill -9`
-   - Or use a different port: `PORT=3001 npm start`
+MIT License - see LICENSE file for details
 
-### Debug Mode
-
-Enable debug logging by setting `REACT_APP_DEBUG=true` in your .env file. This will log:
-- API requests and responses
-- WebSocket connection events
-- Error details
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -194,6 +164,6 @@ Enable debug logging by setting `REACT_APP_DEBUG=true` in your .env file. This w
 4. Add tests if applicable
 5. Submit a pull request
 
-## License
+## 📞 Support
 
-MIT License - see LICENSE file for details.
+For questions or issues, please open an issue on GitHub.
