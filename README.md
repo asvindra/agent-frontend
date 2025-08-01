@@ -1,46 +1,241 @@
-# Getting Started with Create React App
+# Agent Frontend Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React application for monitoring and controlling AI agents with real-time updates via WebSocket connections.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- 🚀 **Real-time Updates**: Live agent status updates via WebSocket
+- 📊 **Dashboard Overview**: Statistics and visual status indicators
+- 🎛️ **Agent Control**: Start, stop, and restart agent actions
+- 📱 **Responsive Design**: Works on desktop and mobile devices
+- 🔄 **Auto-refresh**: Automatic data polling with React Query
+- 🎨 **Modern UI**: Beautiful, accessible interface with smooth animations
+- ⚡ **TypeScript**: Full type safety throughout the application
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Frontend**: React 19 + TypeScript
+- **State Management**: TanStack Query (React Query)
+- **HTTP Client**: Axios
+- **Real-time**: WebSocket API
+- **Styling**: CSS3 with modern design patterns
+- **Backend**: Separate backend service (configured via environment variables)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Quick Start
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 18+ 
+- npm or yarn
+- **Backend service running** (see configuration below)
 
-### `npm run build`
+### Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone and install dependencies:**
+   ```bash
+   cd agent-frontend
+   npm install
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Configure environment variables:**
+   ```bash
+   # The .env file is already created with default values
+   # Update these to match your backend configuration:
+   REACT_APP_API_BASE_URL=http://localhost:8000/api
+   REACT_APP_WEBSOCKET_URL=ws://localhost:8000/ws
+   REACT_APP_AGENT_UPDATE_INTERVAL=5000
+   REACT_APP_ENV=development
+   REACT_APP_DEBUG=true
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Start your backend service** (make sure it's running on the configured ports)
 
-### `npm run eject`
+4. **Start the React application:**
+   ```bash
+   npm start
+   # or use the convenience script:
+   ./start-dev.sh
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+5. **Open your browser:**
+   Navigate to `http://localhost:3000`
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Project Structure
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```
+agent-frontend/
+├── src/
+│   ├── components/          # React components
+│   │   ├── AgentCard.tsx   # Individual agent display
+│   │   ├── AgentDashboard.tsx # Main dashboard
+│   │   └── StatusIndicator.tsx # WebSocket status
+│   ├── hooks/              # Custom React hooks
+│   │   ├── useAgents.ts    # Agent data fetching
+│   │   └── useWebSocket.ts # WebSocket connection
+│   ├── services/           # API services
+│   │   └── api.ts         # HTTP and WebSocket client
+│   ├── types/             # TypeScript definitions
+│   │   └── api.ts         # API response types
+│   └── App.tsx            # Main application
+├── .env                   # Environment variables
+├── start-dev.sh          # Development startup script
+└── README.md             # Documentation
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Environment Variables
 
-## Learn More
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `REACT_APP_API_BASE_URL` | `http://localhost:8000/api` | Backend API endpoint |
+| `REACT_APP_WEBSOCKET_URL` | `ws://localhost:8000/ws` | WebSocket connection URL |
+| `REACT_APP_AGENT_UPDATE_INTERVAL` | `5000` | Polling interval (ms) |
+| `REACT_APP_ENV` | `development` | Environment mode |
+| `REACT_APP_DEBUG` | `true` | Enable debug logging |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Backend API Requirements
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Your backend should provide these endpoints:
+
+### HTTP API Endpoints
+- `GET /api/agents` - Get all agents
+- `GET /api/agents/:id` - Get specific agent
+- `POST /api/agents/:id/actions` - Trigger agent action
+
+### WebSocket Events
+The frontend expects these WebSocket events:
+- `agent_update` - Agent status or progress update
+- `status_change` - Agent status change
+- `task_complete` - Task completion notification
+
+### Expected Data Structure
+
+```typescript
+interface AgentState {
+  id: string;
+  name: string;
+  status: 'online' | 'offline' | 'busy';
+  lastSeen: string;
+  currentTask?: string;
+  updates: AgentUpdate[];
+}
+
+interface AgentUpdate {
+  id: string;
+  timestamp: string;
+  status: 'idle' | 'working' | 'completed' | 'error';
+  message: string;
+  progress?: number;
+  data?: any;
+}
+```
+
+## Features in Detail
+
+### Real-time Updates
+- WebSocket connection for instant updates
+- Automatic reconnection with exponential backoff
+- Visual connection status indicator
+
+### Agent Management
+- View agent status (online, busy, offline)
+- Monitor task progress with progress bars
+- Trigger actions (start, stop, restart)
+- View agent history and updates
+
+### Dashboard Statistics
+- Total agent count
+- Online/offline/busy agent counts
+- Real-time status updates
+
+### Responsive Design
+- Mobile-friendly interface
+- Adaptive grid layout
+- Touch-friendly controls
+
+## Development
+
+### Available Scripts
+
+```bash
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Eject from Create React App
+npm run eject
+```
+
+### Development Script
+
+```bash
+# Start with convenience script (recommended)
+./start-dev.sh
+```
+
+## Customization
+
+### Adding New Agent Actions
+
+1. Update the API service in `src/services/api.ts`
+2. Add new action types in `src/types/api.ts`
+3. Update the AgentCard component to handle new actions
+
+### Styling
+
+The application uses modern CSS with:
+- CSS Grid and Flexbox for layouts
+- CSS Custom Properties for theming
+- Smooth transitions and animations
+- Mobile-first responsive design
+
+### Adding New Agent Types
+
+1. Extend the `AgentState` interface in `src/types/api.ts`
+2. Update your backend data structure
+3. Modify the AgentCard component to display new fields
+
+## Troubleshooting
+
+### Common Issues
+
+1. **WebSocket Connection Failed**
+   - Ensure your backend is running on the configured port
+   - Check firewall settings
+   - Verify the WebSocket URL in .env
+
+2. **API Requests Failing**
+   - Confirm your backend API is running
+   - Check the API base URL in .env
+   - Verify CORS settings on your backend
+
+3. **Build Errors**
+   - Clear node_modules and reinstall: `rm -rf node_modules && npm install`
+   - Check TypeScript errors: `npx tsc --noEmit`
+
+4. **Port Already in Use**
+   - Kill existing processes: `lsof -ti:3000 | xargs kill -9`
+   - Or use a different port: `PORT=3001 npm start`
+
+### Debug Mode
+
+Enable debug logging by setting `REACT_APP_DEBUG=true` in your .env file. This will log:
+- API requests and responses
+- WebSocket connection events
+- Error details
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.
