@@ -1,18 +1,33 @@
 import React, { useState } from 'react';
+import { useRequirementProcessing } from '../hooks/useRequirementProcessing';
+import ProcessingProgress from './ProcessingProgress';
 import './RequirementForm.css';
 
 interface RequirementFormProps {
-  onSubmit: (message: string) => void;
+  onSubmit?: (message: string) => void;
   isLoading?: boolean;
 }
 
-const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading = false }) => {
+const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading: externalLoading }) => {
   const [message, setMessage] = useState('');
+  const {
+    submitRequirement,
+    isSubmitting,
+    submitError,
+    processingState,
+    isProcessing,
+    hasActiveProcessing,
+    clearCurrentRequirement
+  } = useRequirementProcessing();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
-      onSubmit(message.trim());
+      if (onSubmit) {
+        onSubmit(message.trim());
+      } else {
+        submitRequirement(message.trim());
+      }
       setMessage('');
     }
   };
@@ -24,12 +39,30 @@ const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading =
     }
   };
 
+  const isLoading = externalLoading || isSubmitting;
+
   return (
     <div className="chat-container">
       <div className="chat-header">
         <h3>Agent Chat</h3>
         <p>Ask your agent to perform tasks or answer questions</p>
       </div>
+      
+      {/* Show processing progress if active */}
+      {hasActiveProcessing && (
+        <div className="processing-section">
+          <ProcessingProgress 
+            processingState={processingState}
+            isLoading={isProcessing}
+          />
+          <button 
+            onClick={clearCurrentRequirement}
+            className="clear-processing-btn"
+          >
+            Clear Processing
+          </button>
+        </div>
+      )}
       
       <div className="chat-messages">
         <div className="message system-message">
@@ -45,6 +78,14 @@ const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading =
             <p>Just describe what you need and I'll get started.</p>
           </div>
         </div>
+        
+        {submitError && (
+          <div className="message error-message">
+            <div className="message-content">
+              <p>❌ Error: {submitError.message || 'Failed to submit requirement'}</p>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="chat-input-container">
@@ -56,12 +97,12 @@ const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading =
               onKeyPress={handleKeyPress}
               placeholder="Message your agent..."
               rows={1}
-              disabled={isLoading}
+              disabled={isLoading || hasActiveProcessing}
               className="chat-input"
             />
             <button
               type="submit"
-              disabled={!message.trim() || isLoading}
+              disabled={!message.trim() || isLoading || hasActiveProcessing}
               className="send-button"
             >
               {isLoading ? (
@@ -75,7 +116,12 @@ const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading =
           </div>
         </form>
         <div className="input-footer">
-          <span className="input-hint">Press Enter to send, Shift+Enter for new line</span>
+          <span className="input-hint">
+            {hasActiveProcessing 
+              ? 'Processing in progress...' 
+              : 'Press Enter to send, Shift+Enter for new line'
+            }
+          </span>
         </div>
       </div>
     </div>

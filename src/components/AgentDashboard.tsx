@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAgents, useTriggerAgentAction } from '../hooks/useAgents';
+import { useAgents } from '../hooks/useAgents';
 import { useWebSocket } from '../hooks/useWebSocket';
 import AgentCard from './AgentCard';
 import StatusIndicator from './StatusIndicator';
@@ -7,35 +7,25 @@ import RequirementForm from './RequirementForm';
 import './AgentDashboard.css';
 
 const AgentDashboard: React.FC = () => {
-  const { data: agents = [], isLoading, error } = useAgents();
-  const triggerAction = useTriggerAgentAction();
+  const { data: agentsResponse, isLoading, error } = useAgents();
   const { isConnected, lastMessage } = useWebSocket();
+  
+  const agents = agentsResponse?.data || [];
 
-  const handleAgentAction = async (agentId: string, action: string) => {
-    try {
-      await triggerAction.mutateAsync({ agentId, action });
-    } catch (error) {
-      console.error(`Failed to trigger ${action} for agent ${agentId}:`, error);
-    }
-  };
-
-  const handleRequirementSubmit = async (message: string) => {
-    try {
-      console.log('Submitting message:', message);
-      // Here you would typically send the message to your backend
-      // For now, we'll just log it and show a success message
-      alert('Message sent successfully! Check the console for details.');
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      alert('Failed to send message. Please try again.');
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading agents...</p>
+      </div>
+    );
+  }
 
   if (error) {
     return (
       <div className="dashboard-error">
         <h2>Error Loading Agents</h2>
-        <p>Failed to connect to the agent service. Please check your connection and try again.</p>
+        <p>{error.message}</p>
         <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
@@ -45,77 +35,40 @@ const AgentDashboard: React.FC = () => {
     <div className="agent-dashboard">
       <div className="dashboard-header">
         <div className="header-content">
-          <h1>Agent Dashboard</h1>
-          <p>Monitor and control your AI agents in real-time</p>
+          <h1>AI Agent Dashboard</h1>
+          <p>Monitor and interact with your AI agents in real-time</p>
         </div>
         <StatusIndicator isConnected={isConnected} lastMessage={lastMessage} />
       </div>
 
-      <div className="dashboard-layout">
+      <div className="dashboard-content">
         <div className="sidebar">
-          <RequirementForm
-            onSubmit={handleRequirementSubmit}
-            isLoading={triggerAction.isPending}
-          />
+          <RequirementForm />
         </div>
-
+        
         <div className="main-content">
-          <div className="dashboard-stats">
-            <div className="stat-card">
-              <div className="stat-number">{agents.length}</div>
-              <div className="stat-label">Total Agents</div>
+          <div className="agents-section">
+            <div className="section-header">
+              <h2>Available Agents</h2>
+              <span className="agent-count">{agents.length} agents</span>
             </div>
-            <div className="stat-card">
-              <div className="stat-number">
-                {agents.filter(a => a.status === 'online').length}
+            
+            {agents.length === 0 ? (
+              <div className="no-agents">
+                <div className="no-agents-icon">🤖</div>
+                <h3>No Agents Available</h3>
+                <p>No agents are currently online. Check your backend connection.</p>
               </div>
-              <div className="stat-label">Online</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">
-                {agents.filter(a => a.status === 'busy').length}
+            ) : (
+              <div className="agents-grid">
+                {agents.map((agent: any) => (
+                  <AgentCard key={agent.id} agent={agent} />
+                ))}
               </div>
-              <div className="stat-label">Busy</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">
-                {agents.filter(a => a.status === 'offline').length}
-              </div>
-              <div className="stat-label">Offline</div>
-            </div>
+            )}
           </div>
-
-          {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <p>Loading agents...</p>
-            </div>
-          ) : agents.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">🤖</div>
-              <h3>No Agents Found</h3>
-              <p>No agents are currently available. Please check your backend service.</p>
-            </div>
-          ) : (
-            <div className="agents-grid">
-              {agents.map((agent) => (
-                <AgentCard
-                  key={agent.id}
-                  agent={agent}
-                  onAction={(action) => handleAgentAction(agent.id, action)}
-                  isLoading={triggerAction.isPending}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
-
-      {triggerAction.isError && (
-        <div className="error-toast">
-          Failed to trigger action. Please try again.
-        </div>
-      )}
     </div>
   );
 };

@@ -1,82 +1,94 @@
-import axios, { AxiosInstance } from 'axios';
-import { AgentState, ApiResponse, LiveUpdateEvent } from '../types/api';
+import axios from 'axios';
+import { ApiResponse, AgentState, ProcessingState, RequirementRequest } from '../types/api';
 
 class ApiService {
-  private api: AxiosInstance;
+  private baseURL: string;
+  private wsUrl: string;
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
 
   constructor() {
-    this.api = axios.create({
-      baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api',
-      timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // Add request interceptor for logging
-    this.api.interceptors.request.use(
-      (config) => {
-        if (process.env.REACT_APP_DEBUG === 'true') {
-          console.log('API Request:', config.method?.toUpperCase(), config.url);
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Add response interceptor for error handling
-    this.api.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        console.error('API Error:', error.response?.data || error.message);
-        return Promise.reject(error);
-      }
-    );
+    this.baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
+    this.wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:8000/ws';
   }
 
-  // HTTP API Methods
-  async getAgents(): Promise<AgentState[]> {
+  // HTTP API methods
+  async getAgents(): Promise<ApiResponse<AgentState[]>> {
     try {
-      const response = await this.api.get<ApiResponse<AgentState[]>>('/agents');
-      return response.data.data;
+      const response = await axios.get(`${this.baseURL}/agents`);
+      return response.data;
     } catch (error) {
-      console.error('Failed to fetch agents:', error);
-      return [];
+      console.error('Error fetching agents:', error);
+      throw error;
     }
   }
 
-  async getAgentById(id: string): Promise<AgentState | null> {
+  async getAgent(id: string): Promise<ApiResponse<AgentState>> {
     try {
-      const response = await this.api.get<ApiResponse<AgentState>>(`/agents/${id}`);
-      return response.data.data;
+      const response = await axios.get(`${this.baseURL}/agents/${id}`);
+      return response.data;
     } catch (error) {
-      console.error(`Failed to fetch agent ${id}:`, error);
-      return null;
+      console.error('Error fetching agent:', error);
+      throw error;
     }
   }
 
-  async triggerAgentAction(agentId: string, action: string, params?: any): Promise<boolean> {
+  async triggerAgentAction(agentId: string, action: string, data?: any): Promise<ApiResponse<any>> {
     try {
-      const response = await this.api.post<ApiResponse<boolean>>(`/agents/${agentId}/actions`, {
+      const response = await axios.post(`${this.baseURL}/agents/${agentId}/actions`, {
         action,
-        params,
+        data
       });
-      return response.data.success;
+      return response.data;
     } catch (error) {
-      console.error(`Failed to trigger action for agent ${agentId}:`, error);
-      return false;
+      console.error('Error triggering agent action:', error);
+      throw error;
     }
   }
 
-  // WebSocket Methods
-  connectWebSocket(onMessage: (event: LiveUpdateEvent) => void, onConnect?: () => void, onDisconnect?: () => void) {
-    const wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:3001';
-    
+  // New methods for requirement processing
+  async submitRequirement(message: string): Promise<ApiResponse<RequirementRequest>> {
     try {
-      this.ws = new WebSocket(wsUrl);
+      const response = await axios.post(`${this.baseURL}/requirements`, {
+        message,
+        timestamp: new Date().toISOString()
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting requirement:', error);
+      throw error;
+    }
+  }
+
+  async getProcessingState(requirementId: string): Promise<ApiResponse<ProcessingState>> {
+    try {
+      const response = await axios.get(`${this.baseURL}/requirements/${requirementId}/processing`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching processing state:', error);
+      throw error;
+    }
+  }
+
+  async getRequirementHistory(): Promise<ApiResponse<RequirementRequest[]>> {
+    try {
+      const response = await axios.get(`${this.baseURL}/requirements`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching requirement history:', error);
+      throw error;
+    }
+  }
+
+  // WebSocket methods
+  connectWebSocket(
+    onMessage: (event: any) => void,
+    onConnect?: () => void,
+    onDisconnect?: () => void
+  ) {
+    try {
+      this.ws = new WebSocket(this.wsUrl);
 
       this.ws.onopen = () => {
         console.log('WebSocket connected');
@@ -86,10 +98,10 @@ class ApiService {
 
       this.ws.onmessage = (event) => {
         try {
-          const data: LiveUpdateEvent = JSON.parse(event.data);
+          const data = JSON.parse(event.data);
           onMessage(data);
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          console.error('Error parsing WebSocket message:', error);
         }
       };
 
@@ -103,26 +115,23 @@ class ApiService {
         console.error('WebSocket error:', error);
       };
     } catch (error) {
-      console.error('Failed to connect WebSocket:', error);
+      console.error('Error connecting to WebSocket:', error);
     }
   }
 
   private attemptReconnect(
-    onMessage: (event: LiveUpdateEvent) => void,
+    onMessage: (event: any) => void,
     onConnect?: () => void,
     onDisconnect?: () => void
   ) {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-      
-      console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
+      const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
       
       setTimeout(() => {
+        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
         this.connectWebSocket(onMessage, onConnect, onDisconnect);
-      }, delay);
-    } else {
-      console.error('Max reconnection attempts reached');
+      }, timeout);
     }
   }
 
@@ -136,9 +145,15 @@ class ApiService {
   sendWebSocketMessage(message: any) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket is not connected');
     }
+  }
+
+  isWebSocketConnected(): boolean {
+    return this.ws?.readyState === WebSocket.OPEN;
   }
 }
 
-export const apiService = new ApiService();
+const apiService = new ApiService();
 export default apiService; 
