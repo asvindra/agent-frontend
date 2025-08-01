@@ -25,36 +25,59 @@ const RequirementForm: React.FC<RequirementFormProps> = ({ onSubmit, isLoading =
   };
 
   return (
-    <div className="requirement-form">
-      <div className="form-header">
+    <div className="chat-container">
+      <div className="chat-header">
         <h3>Agent Chat</h3>
-        <p>Describe your task or ask a question to the agent</p>
+        <p>Ask your agent to perform tasks or answer questions</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="chat-form">
-        <div className="input-container">
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Describe what you want the agent to do... (e.g., 'Process the sales data and generate a report', 'Train a model on the customer dataset')"
-            rows={3}
-            disabled={isLoading}
-            className="message-input"
-          />
-          <button
-            type="submit"
-            disabled={!message.trim() || isLoading}
-            className="send-btn"
-          >
-            {isLoading ? (
-              <span className="loading-dots">Sending...</span>
-            ) : (
-              <span>Send</span>
-            )}
-          </button>
+      <div className="chat-messages">
+        <div className="message system-message">
+          <div className="message-content">
+            <p>👋 Hello! I'm your AI agent assistant. I can help you with:</p>
+            <ul>
+              <li>Data processing and analysis</li>
+              <li>Machine learning model training</li>
+              <li>Automation tasks</li>
+              <li>Report generation</li>
+              <li>And much more!</li>
+            </ul>
+            <p>Just describe what you need and I'll get started.</p>
+          </div>
         </div>
-      </form>
+      </div>
+      
+      <div className="chat-input-container">
+        <form onSubmit={handleSubmit} className="chat-input-form">
+          <div className="input-wrapper">
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Message your agent..."
+              rows={1}
+              disabled={isLoading}
+              className="chat-input"
+            />
+            <button
+              type="submit"
+              disabled={!message.trim() || isLoading}
+              className="send-button"
+            >
+              {isLoading ? (
+                <div className="loading-spinner-small"></div>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
+          </div>
+        </form>
+        <div className="input-footer">
+          <span className="input-hint">Press Enter to send, Shift+Enter for new line</span>
+        </div>
+      </div>
     </div>
   );
 };

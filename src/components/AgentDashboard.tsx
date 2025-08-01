@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAgents, useTriggerAgentAction } from '../hooks/useAgents';
 import { useWebSocket } from '../hooks/useWebSocket';
 import AgentCard from './AgentCard';
