@@ -1,20 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAgents, useTriggerAgentAction } from '../hooks/useAgents';
 import { useWebSocket } from '../hooks/useWebSocket';
 import AgentCard from './AgentCard';
 import StatusIndicator from './StatusIndicator';
+import RequirementForm, { AgentRequirements } from './RequirementForm';
 import './AgentDashboard.css';
 
 const AgentDashboard: React.FC = () => {
   const { data: agents = [], isLoading, error } = useAgents();
   const triggerAction = useTriggerAgentAction();
   const { isConnected, lastMessage } = useWebSocket();
+  const [showRequirementForm, setShowRequirementForm] = useState(false);
 
   const handleAgentAction = async (agentId: string, action: string) => {
     try {
       await triggerAction.mutateAsync({ agentId, action });
     } catch (error) {
       console.error(`Failed to trigger ${action} for agent ${agentId}:`, error);
+    }
+  };
+
+  const handleRequirementSubmit = async (requirements: AgentRequirements) => {
+    try {
+      console.log('Submitting requirements:', requirements);
+      // Here you would typically send the requirements to your backend
+      // For now, we'll just log them and show a success message
+      alert('Requirements submitted successfully! Check the console for details.');
+      setShowRequirementForm(false);
+    } catch (error) {
+      console.error('Failed to submit requirements:', error);
+      alert('Failed to submit requirements. Please try again.');
     }
   };
 
@@ -35,8 +50,23 @@ const AgentDashboard: React.FC = () => {
           <h1>Agent Dashboard</h1>
           <p>Monitor and control your AI agents in real-time</p>
         </div>
-        <StatusIndicator isConnected={isConnected} lastMessage={lastMessage} />
+        <div className="header-actions">
+          <button
+            className="requirement-btn"
+            onClick={() => setShowRequirementForm(!showRequirementForm)}
+          >
+            {showRequirementForm ? 'Hide Requirements' : 'Add Requirements'}
+          </button>
+          <StatusIndicator isConnected={isConnected} lastMessage={lastMessage} />
+        </div>
       </div>
+
+      {showRequirementForm && (
+        <RequirementForm
+          onSubmit={handleRequirementSubmit}
+          isLoading={triggerAction.isPending}
+        />
+      )}
 
       <div className="dashboard-stats">
         <div className="stat-card">
