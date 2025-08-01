@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiService from '../services/api';
-import { RequirementRequest, ProcessingState } from '../types/api';
 
 export const useRequirementProcessing = () => {
   const [currentRequirementId, setCurrentRequirementId] = useState<string | null>(null);
@@ -25,14 +24,7 @@ export const useRequirementProcessing = () => {
     queryKey: ['processing-state', currentRequirementId],
     queryFn: () => apiService.getProcessingState(currentRequirementId!),
     enabled: !!currentRequirementId,
-    refetchInterval: (data) => {
-      // Stop polling if completed or failed
-      const processingData = data?.data;
-      if (processingData?.currentState === 'COMPLETED' || processingData?.progress === 100) {
-        return false;
-      }
-      return 2000; // Poll every 2 seconds
-    },
+    refetchInterval: 2000, // Poll every 2 seconds
     refetchIntervalInBackground: true
   });
 
@@ -52,7 +44,7 @@ export const useRequirementProcessing = () => {
         setCurrentRequirementId(null);
       }, 3000);
     }
-  }, [processingStateQuery.data?.data?.currentState]);
+  }, [processingStateQuery.data?.data]);
 
   const submitRequirement = (message: string) => {
     submitRequirementMutation.mutate(message);
