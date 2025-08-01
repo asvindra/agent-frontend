@@ -101,51 +101,9 @@ Your backend should provide these endpoints:
 - `GET /api/agents/:id` - Get specific agent
 - `POST /api/agents/:id/actions` - Trigger agent action
 
-### WebSocket Events
-The frontend expects these WebSocket events:
-- `agent_update` - Agent status or progress update
-- `status_change` - Agent status change
-- `task_complete` - Task completion notification
 
-### Expected Data Structure
-
-```typescript
-interface AgentState {
-  id: string;
-  name: string;
-  status: 'online' | 'offline' | 'busy';
-  lastSeen: string;
-  currentTask?: string;
-  updates: AgentUpdate[];
-}
-
-interface AgentUpdate {
-  id: string;
-  timestamp: string;
-  status: 'idle' | 'working' | 'completed' | 'error';
-  message: string;
-  progress?: number;
-  data?: any;
-}
-```
 
 ## Features in Detail
-
-### Real-time Updates
-- WebSocket connection for instant updates
-- Automatic reconnection with exponential backoff
-- Visual connection status indicator
-
-### Agent Management
-- View agent status (online, busy, offline)
-- Monitor task progress with progress bars
-- Trigger actions (start, stop, restart)
-- View agent history and updates
-
-### Dashboard Statistics
-- Total agent count
-- Online/offline/busy agent counts
-- Real-time status updates
 
 ### Responsive Design
 - Mobile-friendly interface
