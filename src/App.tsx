@@ -1,7 +1,8 @@
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AgentDashboard from './components/AgentDashboard';
-import './App.css';
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import AgentDashboard from './components/AgentDashboard'
+import ClarificationAgentDemo from './components/ClarificationAgentDemo'
+import './App.css'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -12,16 +13,17 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
-});
+})
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="App">
+        <ClarificationAgentDemo />
         <AgentDashboard />
       </div>
     </QueryClientProvider>
-  );
+  )
 }
 
-export default App;
+export default App
